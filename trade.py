@@ -84,7 +84,7 @@ while True:
     env2 = environment(120)
 
     # Get the current price
-    current_price = float("%.5f" % get_ticker_price())
+    current_price = round(get_ticker_price(), 2)
 
     # Check if short variance is greater than long variance
     if env2['variance'] > env1['variance']:
