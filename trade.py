@@ -71,7 +71,7 @@ else:
     }
 
 # Set up variables for trading parameters
-alpha_range = 0.0035
+alpha_range = 0.005
 profit = 0.0
 stop_loss = 0.987
 quantity = 0.0001
