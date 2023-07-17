@@ -8,44 +8,50 @@ import time
 import numpy as np
 import os
 
+# Retrieve the current price of the ticker from an API
 def get_ticker_price():
     price = requests.get('https://www.mercadobitcoin.net/api/BTC/ticker/')
     price = json.loads(price.text)
     return float(price['ticker']['last'])
 
+# Retrieve the trades within a specified time frame from an API
 def get_trades(seconds):
     time_now = int(time.time())
     time_then = time_now - seconds
     trades = requests.get('https://www.mercadobitcoin.net/api/BTC/trades/{0}/{1}'.format(time_then, time_now))
     return trades.json()
 
+# Extract a specific key from a list of trades
 def extract(trades, a_key):
     extract = []
     for trade in trades:
         extract.append(trade[a_key])
     return extract
     
+# Create an environment dictionary with variance and mean price information
 def environment(timeframe):
     trades = get_trades(timeframe)
     prices = extract(trades, 'price')
     environment = {
         'variance': np.var(prices), 
         'mean_price': round(np.mean(prices), 2), 
-        }
+    }
     return environment
     
+# Calculate the alpha value based on the current price and mean price
 def alpha(current, mean):
     alpha = current - mean
     alpha = alpha / mean
     return abs(alpha)
 
+# Calculate the new order based on the previous order and a new order
 def calc_order(new_order, order):
     tmp = {
         'quantity': new_order['quantity'] + order['quantity'],
         'volume': round(new_order['volume'] + order['volume'], 2),
         'timestamp': int(time.time()),
         'profit': round(new_order['profit'], 2),
-        }
+    }
     if tmp['quantity'] > 0:
         tmp['price'] = round(tmp['volume'] / tmp['quantity'], 2)
     else:
