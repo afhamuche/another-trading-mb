@@ -28,17 +28,18 @@ def extract(trades, a_key):
 def environment(timeframe):
     trades = get_trades(timeframe)
     prices = extract(trades, 'price') 
+    mean = round(np.mean(prices), 2)
     environment = {
         'variance': np.var(prices), 
-        'mean_price': round(np.mean(prices), 2), 
-        'volatility': round(np.std(prices), 4),
+        'mean_price': mean, 
+        'alpha': alpha(get_ticker_price(), mean),
         }
     return environment
     
 def alpha(current, mean):
     alpha = current - mean
     alpha = alpha / mean
-    return abs(alpha)
+    return round(alpha * 100, 4)
 
 def calc_order(new_order, order):
     tmp = {
@@ -73,7 +74,7 @@ else:
         'budget': 1000.0,
         }
 
-alpha_range = 0.005
+alpha_range = 0.5
 profit = 0.0
 stop_loss = 0.987
 quantity = 0.0001
@@ -118,13 +119,13 @@ while True:
             time.sleep(15)
             env3 = environment(120) 
             print(f'env3: {env3}\nenv4: {env2}')
-            direction = env2['mean_price'] > current_price
+            direction = env3['alpha'] != abs(env3['alpha'])
             
-            if env3['volatility'] > env2['volatility']:
-                order['status'] = 'break: vol3 > vol2'
-                break
+            # if env3['alpha'] > env2['alpha']:
+                # order['status'] = 'break: alpha3 > alpha2'
+                # break
                 
-            elif alpha_range > alpha(current_price, env3['mean_price']):
+            if alpha_range > env3['alpha']:
                 print('alpha_range condition')
                 order['status'] = 'alpha_range > alpha3'
                 volume = current_price * quantity
