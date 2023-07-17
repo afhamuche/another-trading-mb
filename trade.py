@@ -109,6 +109,9 @@ while True:
         new_order['profit'] += profit 
         order = calc_order(new_order, order)
         order['status'] = f'stoploss {quantity} @ profit R${profit}'
+        print(order)
+        time.sleep(60)
+        continue
     
     if env2['variance'] > env1['variance']:
         env2 = environment(300)  
