@@ -30,7 +30,7 @@ def environment(timeframe):
     prices = extract(trades, 'price') 
     mean = round(np.mean(prices), 2)
     environment = {
-        'variance': np.var(prices), 
+        'variance': round(np.var(prices), 2), 
         'mean_price': mean, 
         'alpha': alpha(get_ticker_price(), mean),
         }
@@ -94,21 +94,19 @@ while True:
     order['timestamp'] = int(time.time())
     order['status'] = 'pre-conditions'
     
-    if (current_price / order['price']) < stop_loss:
+    if order['price'] is not None and (current_price / order['price']) < stop_loss:
         print('stop_loss reached')
         new_order = {
             'price': current_price,
             'quantity': -1 * order['quantity'],
             'volume': current_price * order['quantity'] * -1,
             'timestamp': int(time.time()),
-            'profit': order['profit'],
             }
-        new_order['budget'] = new_order['volume'] + new_order['profit']
         order['stoploss'] += 1
-        profit = new_order['volume'] + order['volume']
-        new_order['profit'] += profit 
+        new_order['profit'] = new_order['volume'] + order['volume'] + order['profit']
+        new_order['budget'] = order['budget'] + new_order['profit']
         order = calc_order(new_order, order)
-        order['status'] = f'stoploss {quantity} @ profit R${profit}'
+        order['status'] = f'stoploss {quantity} @ R${current_price}'
         print(order)
         time.sleep(60)
         continue
@@ -152,13 +150,11 @@ while True:
                         'quantity': -1 * quantity,
                         'volume': current_price * quantity * -1,
                         'timestamp': int(time.time()),
-                        'profit': order['profit'],
                         }
-                    profit = (quantity * order['price']) + new_order['volume']
-                    new_order['profit'] += profit
-                    new_order['budget'] = order['budget'] - new_order['volume']
+                    new_order['profit'] = (quantity * order['price']) + new_order['volume'] + order['profit']
+                    new_order['budget'] = order['budget'] - new_order['volume'] + new_order['profit']
                     order = calc_order(new_order, order)
-                    order['status'] = f'sell {quantity} @ profit R${profit}'
+                    order['status'] = f'sell {quantity} @ R${current_price}'
                     
                     
                 print("Got to alpha_range break")
